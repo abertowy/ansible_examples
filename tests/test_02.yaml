@@ -1,0 +1,11 @@
+- name: Comments in the PRs
+  hosts: localhost
+  tasks:
+    # Some operations with timestamps
+    - name: Check the date
+      debug:
+        msg: "{{ '%Y-%m-%dT%H:%M:%SZ' | strftime(ansible_date_time.epoch|int - 86400) }}"
+
+    - name: Current timestamp
+      debug:
+        msg: "{{ ansible_date_time.iso8601 }}"
