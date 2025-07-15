@@ -1,0 +1,134 @@
+import sys
+from typing import List
+
+from ddad_simple_command_config import DdadSimpleCommandConfig
+from src.bazel_main_wrapper import main_wrapper
+from src.utils.exceptions import MultipleTargetsInBazelRunError
+from src.commands import (
+    TargetPatterns,
+    TargetFile,
+{% if bazel_clean_build | default(false) or build.clean | default(false)%}
+    BazelClean,
+{% endif %}
+{% if build.bazel_shutdown_before_build | default(false) %}
+    BazelShutdown,
+{% endif %}
+{%
+set imports = {
+    'aquery':['BazelAquery', 'QueryExpression'],
+    'build':['BazelBuild', ],
+    'coverage':['BazelCoverage'],
+    'cquery':['BazelCquery','QueryExpression'],
+    'fetch':['BazelFetch'],
+    'query':['BazelQuery', 'QueryExpression'],
+    'run':['BazelRun','RunTarget'],
+    'test':['BazelTest'],
+}
+%}
+{% for import in imports[bazel_command] %}
+    {{ import }},
+{% endfor %}
+)
+{% if build.rewind_history | default(false) %}
+from pathlib import Path
+from bagi.old_repo_state import OldRepoState
+from bagi.repository import Repository
+{% endif %}
+
+build_configs = [
+{% for cfg in build_extended_options | default([]) %}
+{%     if "--config=" in cfg %}
+        "{{ cfg | trim | replace("--config=", "")}}",
+{%     endif %}
+{% endfor -%}
+]
+
+common_config = DdadSimpleCommandConfig(
+    compilation_mode="fastbuild",
+    configs=build_configs,
+{% if
+    build.host_jvm_args is defined and 
+    build.host_jvm_args | type_debug == 'list' and 
+    build.host_jvm_args | length > 0
+%}
+    host_jvm_args=[
+{%     for host_jvm_arg in build.host_jvm_args %}
+        "{{ host_jvm_arg | trim }}",
+{%     endfor %}
+    ],
+{% endif %}
+)
+
+shutdown_configs = [
+{% for cfg in build_extended_options | default([]) %}
+{%     if "build_tests_only" in cfg %}
+        "{{ cfg | replace(cfg, "") | trim }}"
+{%     endif %}
+{%     if "--config=" in cfg %}
+        "{{ cfg | trim | replace("--config=", "")}}",
+{%     endif %}
+{% endfor -%}
+]
+
+shutdown_common_config = DdadSimpleCommandConfig(
+    compilation_mode="fastbuild",
+    configs=shutdown_configs,
+{% if
+    build.host_jvm_args is defined and 
+    build.host_jvm_args | type_debug == 'list' and 
+    build.host_jvm_args | length > 0
+%}
+    host_jvm_args=[
+{%     for host_jvm_arg in build.host_jvm_args %}
+        "{{ host_jvm_arg | trim }}",
+{%     endfor %}
+    ],
+{% endif %}
+)
+
+{% include 'inc/'+bazel_command+'.j2' %}
+{% if True %}
+{# i am only here to make the output prettier #}
+
+{% endif %}
+
+
+if __name__ == "__main__":
+    ALL_CONFIGS = [BAZEL_RUNNER_CONFIG]
+{% if build.bazel_shutdown_before_build | default(false) %}
+    SHUTDOWN_CONFIG = BazelShutdown(
+        config=shutdown_common_config,
+        description="bazel shutdown before build",
+    )
+    ALL_CONFIGS = [SHUTDOWN_CONFIG] + ALL_CONFIGS
+{% endif %}
+{% if bazel_clean_build | default(false) or build.clean | default(false)%}
+    CLEAN_CONFIG = BazelClean(
+        config=common_config,
+        description="bazel clean before build",
+    )
+    ALL_CONFIGS = [CLEAN_CONFIG] + ALL_CONFIGS
+{% endif %}
+
+{% if build.rewind_history | default(false) %}
+{%     if ansible_os_family == "Windows" %}
+    repository_scope = [ "{{ zuul['items'] | map(attribute='project.name') |
+      ansible.builtin.intersect(zuul['projects'] | dict2items | selectattr('value.required') |
+      map(attribute='value.name')) | default([]) | unique | map('regex_replace', '^', '') |
+      map('regex_replace', '/', '\\\\\\\\') | join('", "') }}" ]
+{%     else %}
+    repository_scope = [ "{{ zuul['items'] | map(attribute='project.name') |
+      ansible.builtin.intersect(zuul['projects'] | dict2items | selectattr('value.required') |
+      map(attribute='value.name')) | default([]) | unique | map('regex_replace', '^', '') |
+      join('", "') }}" ]
+{%     endif %}
+    ref = "origin/{{ base_project.checkout }}"
+    use_merge_base = True
+    repository = Repository(Path("{{ git_repository_path }}"), "git@cc-github.bmwgroup.net:swh/ddad.git")
+    with OldRepoState(repository, repository_scope, use_merge_base, ref):
+        result = main_wrapper(ALL_CONFIGS)
+{% else %}
+    result = main_wrapper(ALL_CONFIGS)
+{% endif %}
+
+    sys.exit(result)
