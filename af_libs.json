@@ -1,0 +1,101 @@
+{
+    "ddad_hash": "e58727302c2508598651c0b62cbe4f91034a990e",
+    "libraries": [
+        {
+            "sha-256": "531e6c027923aa506bc5624144066c89bc5e728eb6023a1455023cfaf68f8519",
+            "urls": [
+                "https://af-link.com/artifactory/path_to_lib/franca_tools_v2024.14.0.jar"
+            ],
+            "version": "v2024.14.0",
+            "library_name": "franca_tools"
+        },
+        {
+            "sha-256": "e43ea79c6d1d09392c20c05e842e4958da75936ad6ac664ae70f41963b1438c7",
+            "urls": [
+                "https://af-link.com/artifactory/path_to_lib/ipnext_cv_soc_CVDN.QX.4.4.0.tar.gz"
+            ],
+            "version": "CVDN.QX.4.4.0",
+            "library_name": "ipnext_cv_soc"
+        },
+        {
+            "sha-256": "edc4d01a6b7ffe085405dc50d41e57454f1bf0ba81a5db2baa3ea753650d6960",
+            "urls": [
+                "https://af-link.com/artifactory/path_to_lib/libiks_9.0.1.1.zip"
+            ],
+            "version": "9.0.1.1",
+            "library_name": "libiks"
+        },
+        {
+            "sha-256": "2d8aa35017cddba9747c4097df13e6b5d3be99c58d7a574dc3d29da7e2f13820",
+            "urls": [
+                "https://af-link.com/artifactory/path_to_lib/libmrr_I480_ATS_v11_1_1/libmrr.zip"
+            ],
+            "version": "I480_ATS_v11_1_1",
+            "library_name": "libmrr"
+        },
+        {
+            "sha-256": "1b877d67f9535b5e05f7a997565d92f6925369957ff3f148af41d4d8b6f68415",
+            "urls": [
+                "https://af-link.com/artifactory/path_to_lib/libsrr_I480_ats_v12_1_1/libsrr.zip"
+            ],
+            "version": "I480_ats_v12_1_1",
+            "library_name": "libsrr"
+        },
+        {
+            "sha-256": "a8b772c6199deb481937261a2951525e7d0ab5d6bc2dfd3ce4f589a0965b498d",
+            "urls": [
+                "https://af-link.com/artifactory/path_to_lib/parkingdftlib_00.00.56.tar.gz"
+            ],
+            "version": "00.00.56",
+            "library_name": "parkingdftlib"
+        },
+        {
+            "sha-256": "ba678d0c5f5d788fecafd949142a8d5572660d136ad7f5675b0c6c721dc845b5",
+            "urls": [
+                "https://af-link.com/artifactory/path_to_lib/parkingstacklib_000.480.002.02.01.tar.gz"
+            ],
+            "version": "000.480.002.02.01",
+            "library_name": "parkingstacklib"
+        },
+        {
+            "sha-256": "2dd63e9ddc42e0366b69ccd94c3bb13ee17a6c8d2713b811e2d72c8c3f5e7c09",
+            "urls": [
+                "https://af-link.com/artifactory/path_to_lib/poseng_core_lib_gcc_VER11_0_1_ipnext.tar"
+            ],
+            "version": "VER11_0_1",
+            "library_name": "poseng_core_lib_gcc"
+        },
+        {
+            "sha-256": "bbee8bf3bfc0c54dc9a09271f8062a9efae38773847b86e853dd556bcab73fa1",
+            "urls": [
+                "https://af-link.com/artifactory/path_to_lib/poseng_core_lib_qcc_VER11_0_1_linux.tar"
+            ],
+            "version": "VER11_0_1",
+            "library_name": "poseng_core_lib_qcc"
+        },
+        {
+            "sha-256": "8d43f0aacd40e6090c1a858f1becab7fcb1af7a72bde0516f187d07b8a3cc205",
+            "urls": [
+                "https://af-link.com/artifactory/path_to_lib/rdf_engine_regensburg_test_datasets.tar.gz"
+            ],
+            "version": "0.0.0",
+            "library_name": "rdf_engine_regensburg_test_datasets"
+        },
+        {
+            "sha-256": "f2a9fa3630ad4f1f48ab3ab45a2af5a4b775117d55bdebb86cf4cfc2c752d8d9",
+            "urls": [
+                "https://af-link.com/artifactory/path_to_lib/rdf_engine_test_datasets_11042024_120700.tar.gz"
+            ],
+            "version": "11042024_120700",
+            "library_name": "rdf_engine_test_datasets"
+        },
+        {
+            "sha-256": "42ee013e69120b8ab998365800d2261b3ffb4ec0bc5a38259c626a2c797796b5",
+            "urls": [
+                "https://af-link.com/artifactory/path_to_lib/ussapplib_11.02.00.tar.gz"
+            ],
+            "version": "11.02.00",
+            "library_name": "ussapplib"
+        }
+    ]
+}
