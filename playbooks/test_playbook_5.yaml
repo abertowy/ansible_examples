@@ -1,0 +1,22 @@
+- name: Comments in the PRs
+  hosts: localhost
+  vars:
+    sdp_all_targets: "qnx_sdp_core/target/qnx7/aarch64le"
+    sdp_bin_dir: "qnx_sdp_core/host/linux/x86_64/usr/bin"
+    sdp_share_dir: "qnx_sdp_core/host/linux/x86_64/usr/share"
+    sdp_gdb_data_dir: "qnx_sdp_core/host/linux/x86_64/usr/share/gdb"
+    sdp_ntoaarch_gdb: "qnx_sdp_core/host/linux/x86_64/usr/bin/ntoaarch64-gdb"
+    sdp_env: "qnx_sdp_core/qnxsdp-env.sh"
+    ansible_remote_tmp: /tmp
+  tasks:
+    - name: Unarchive a QNX SDP file that is already on the remote machine
+      unarchive:
+        src: "/home/dodintsova/Downloads/qnx_sdp_core-20250321-03-iopkt-logging-crash-extended.tar.gz"
+        # src: "/tmp/backtraces/qnx_sdp_core-20250321-01.tar.gz"
+        dest: "/tmp/backtraces/old"
+        include:
+          - "./{{ sdp_all_targets }}"
+          - "./{{ sdp_bin_dir }}"
+          - "./{{ sdp_share_dir }}"
+          - "./{{ sdp_env }}"
+        remote_src: true

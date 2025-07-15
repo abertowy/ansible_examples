@@ -1,0 +1,427 @@
+- name: Comments in the PRs
+  hosts: localhost
+  vars:
+    ddad_af_url: "https://ddad.artifactory.cc.bmwgroup.net/artifactory"
+    ipnext_dbg_snapshots_af: "ipnext-debug-snapshots/nightly/{{ previous_date }}/master/ipnext/collaterals/perf"
+    ipnext_dbg_tgz: "ipnext_apps_debug.tar.gz"
+    tg_task_names: [1, 2, 5, 2, 1, 5, 2, 3, 4]
+    tg_task_names_2: [1, 2, 4, 6, 6, 6, 0]
+    tg_coredumps:
+      - "/home/zuul/VIPN_Trace_Storage/IP-Next_POSIX_NAS_Linkage/314282/Setup Ethernet_2025-05-05_234950/02_createHashes/coredump.1616444568.AdMake80msAsilBComHandler.364661.core.gz"
+      - "/home/zuul/VIPN_Trace_Storage/IP-Next_POSIX_NAS_Linkage/314282/coredumps/esys_flash/iteration_4/coredump.1616444450.AdMake80msAsilBComHandler.557202.core.gz"
+    # build:
+    #   command: "test"
+    #   targets:
+    #     - "//deployment/ecu_instances/ip_next/ipn_main/test:ip_next_tc3_sil_tests"
+    #   options:
+    #     - "--config=base_tc39_sil"
+    #     - "--config=build_tests_only"
+    #   bazel_shutdown_before_build: true
+    third_party_libs_home:
+      - "/home/dodintsova/Documents/coredumps/missed_libs/third_party_src"
+    third_party_libs_short:
+      - "libsrr"
+      - "libmrr"
+    third_party_libs:
+      - "parkingstacklib"
+      - "libsrr"
+      - "libmrr"
+      - "libiks"
+      - "ipnext_cv_soc"
+      - "poseng_core_lib_gcc"
+      - "poseng_core_lib_qcc"
+    json_file: "ddad_ecu_ipnext_third_party_libraries.json"
+    path_to_json: "/home/dodintsova/work_dir/ansible_tests"
+    ipnext_qnx_sdp_third_party: "parkingstacklib"
+    bazel_out: "/home/dodintsova/.cache/bazel/_bazel_dodintsova/e57e130863ac0b3dd9ee98f14269bd96/execroot/ddad/bazel-out"
+    calibration_script: "/home/dodintsova/work_dir/ddad/ci_config/scripts/ipnext/calibration_parameter_check/calibration_parameter_check.py"
+    calibration:
+      - "/var/cache/output_base/execroot/ddad/bazel-out/k8-fastbuild-rewind_history_lin/bin/ecu/xpad/xpad-shared/config/ipnext/isoc/sysfunc/ConfigDaemon/calibration_parameters.json"
+      - "/var/cache/output_base/execroot/ddad/bazel-out/k8-fastbuild/bin/ecu/xpad/xpad-shared/config/ipnext/isoc/sysfunc/ConfigDaemon/calibration_parameters.json"
+      - "smth"
+    zuul:
+      - branch: master
+        project:
+          canonical_hostname: cc-github.bmwgroup.net
+          canonical_name: cc-github.bmwgroup.net/swh/orion
+          name: swh/orion
+      - branch: master
+        project:
+          canonical_hostname: cc-github.bmwgroup.net
+          canonical_name: cc-github.bmwgroup.net/swh/ddad_ci_config
+          name: swh/ddad_ci_config
+  tasks:
+    # - name: Remove archives
+    #   file:
+    #     path: "{{ item }}"
+    #     state: absent
+    #   with_items:
+    #     - "/tmp/metrics/file_1.txt"
+    #     - "/tmp/metrics/file_2.txt"
+    #     - "/tmp/metrics/file_3.txt"
+
+    # - name: Create ctx data for context file
+    #   set_fact:
+    #     ctx_data: {"timestamp": "tttt", "ipnext_dbg_snapshot": "snapshot", "ipnext_platform_dbg_snapshot": "platform"}
+    #     shutdown: true
+
+    # - name: Slurp json
+    #   slurp:
+    #     src: "{{ path_to_json + '/' + json_file }}"
+    #   register: json_slurped
+
+    # - name: Create ctx data for context file
+    #   set_fact:
+    #     version_file: "{{ json_slurped ['content'] | b64decode | from_json }}"
+
+    # - name: Print SMTH
+    #   debug:
+    #     msg: "{{ version_file }}"
+    #   when: shutdown is defined and shutdown == true
+
+    # - name: Get taskId from tg_task_names
+    #   set_fact:
+    #     third_party_libs_links: "{{ third_party_libs_links | default([]) + [{'library_name': item.library_name, 'url': item.urls[0] } ] }}"
+    #   with_items: "{{ version_file.libraries }}"
+    #   when: item.library_name in third_party_libs
+
+    # - name: Print SMTH
+    #   debug:
+    #     msg: "{{ item.url.split('/')[-1] }}"
+    #   with_items: "{{ third_party_libs_links }}"
+
+    # - name: Collect so files
+    #   find:
+    #     paths: "{{ item }}"
+    #     recurse: yes
+    #     patterns: "*.a*"
+    #   register: third_party_libs_files
+    #   with_items: "{{ third_party_libs_home }}"
+
+    # - name: Copy third party so files to sharedlibs_bundle
+    #   copy:
+    #     src: "{{ item.path }}"
+    #     dest: "/home/dodintsova/Documents/coredumps/missed_libs/third_party"
+    #     remote_src: yes
+    #     mode: '776'
+    #   with_items: "{{ third_party_libs_files.results | map(attribute='files') | list }}"
+
+    # - name: Identify pipelines for prod signing
+    #   set_fact:
+    #     prod_pipelines: True
+
+    # - name: Set the signers and choose appropriate one
+    #   set_fact:
+    #     ipn_main_prod_signing: "{{ True if prod_pipelines else False }}"
+    #     cacheable: true
+
+    # - debug:
+    #     msg: "signig_config={{ ipn_main_prod_signing }}"
+
+    # - name: Get QNX SDP af url from version file
+    #   set_fact:
+    #     qnx_sdp_third_party_libs_link: "{'library_name': {{ item }}, 'url': {{ item }} }"
+    #     third_party_libs_links: "{{ {'library_name': item, 'url': item } }}"
+    #     af: "{{ ddad_af_url | split('/') | last }}"
+    #     use_patchr_url: True
+    #   with_items: "{{ third_party_libs }}"
+    #   when: item == ipnext_qnx_sdp_third_party
+
+    # - debug:
+    #     msg: "{{ af }}"
+
+    # - name: Print with when
+    #   debug:
+    #     msg: "{{ third_party_libs_links }}"
+    #   when: use_patchr_url | default(False)
+
+    - name: Confirm or release SWE and PDX patch versions
+      shell: "echo AAAA/{{ item }}"
+      register: win_curl_result
+      with_items: ['', '_d0', '_ipn15']
+
+    - name: Collect calibration_parameters files
+      find:
+        paths: "{{ bazel_out }}"
+        recurse: yes
+        patterns: "calibration_parameters.json"
+      register: collected_files
+
+    - name: Calibration files list
+      set_fact:
+        calibration_list: "{{ calibration_list | default([]) + [ item.path ] }}"
+      with_items: "{{ collected_files.files }}"
+
+    - name: Calibration files to str
+      set_fact:
+        calibration_files: "{{ calibration_list | join(',') }}"
+
+    - name: Compare build results
+      command: "python3 {{ calibration_script }} --files {{ calibration_files }}"
+      register: check_result
+      ignore_errors: true
+
+    - name: Print check results
+      debug:
+        msg: "{{ check_result.stdout }}"
+
+    - name: Fix dst filenames
+      set_fact:
+        calibration_files_dst: "{{ calibration_files_dst | default([]) + [((item) | regex_search('rewind_history') | string != 'None') | ternary('calibration_parameters_master.json', 'calibration_parameters_change.json')] }}"
+      with_items: "{{ calibration }}"
+
+    - debug:
+        msg: "AAAAAA"
+      with_items: "{{ zuul }}"
+      when: item.project.name == 'swh/ddad_ci_config'
+
+    - name: Set dest prefix
+      set_fact:
+        dst_prefix: "/tmp/master/extracted_backtrace"
+        amts_trs_prefix: (\d{5,}).*/coredump.(.*)$
+        mount_path_folder: "/home/zuul/VIPN_Trace_Storage/IP-Next_POSIX_NAS_Linkage"
+
+    - name: Coredump path with correct dest
+      set_fact:
+        coredump_filtered: "{{ coredump_filtered | default([]) + [(item) | regex_replace(amts_trs_prefix, '\\1/coredump.\\2') | replace(mount_path_folder, dst_prefix)] }}"
+      with_items: "{{ tg_coredumps }}"
+
+    - name: Context path
+      set_fact:
+        context_paths: "{{ context_paths | default([]) + [(item) | replace('coredump.', 'context.')] }}"
+        context_prefix: (.*)/(\d{5,}).*/context.(.*)$
+      with_items: "{{ tg_coredumps }}"
+
+    - name: Context short path
+      set_fact:
+        context_short_paths: "{{ context_short_paths | default([]) + [(item) | regex_replace(context_prefix, '\\2/context.\\3')] }}"
+      with_items: "{{ context_paths }}"
+
+    - name: DBG
+      debug:
+        msg: "{{ context_short_paths }}"
+
+    - name: Read check results
+      shell: cat /tmp/calibration/results.txt
+      register: check_result
+
+    - name: Post label to PR if files are not equal
+      debug:
+        msg: "parameter_change"
+      when:
+        - check_result.stdout | regex_search('[ERROR] Calibration parameters check. Files are not equal')
+
+    - name: Prepare cgheck result
+      set_fact:
+        files_equal: "{{ '[INFO] Calibration parameters check. Files are equal' in check_result.stdout }}"
+
+    - name: Post label to PR if files are equal
+      debug:
+        msg: "no_parameter_change"
+      when: check_result.stdout == '[INFO] Calibration parameters check. Files are equal'
+
+    - name: Post label to PR if files are equal
+      debug:
+        msg: "no_parameter_change"
+      when: "{{ 'swh/ddad' not in third_party_libs }}"
+
+    - name: Set dummy fact
+      set_fact:
+        check_fact: "{{ check_fact | default([]) + third_party_libs_short }}"
+      when: "{{ 'aaa' in third_party_libs_short }}"
+
+    - name: Post label to PR if files are equal
+      debug:
+        msg: "{{ check_fact }}"
+      when: check_fact is defined
+
+    - name: Set fact for results
+      set_fact:
+        file_list: "{{ file_list | default([]) + [item] }}"
+      with_items: ["AAAA", "BBBB"]
+      when: false
+
+    - name: Set results list
+      command: echo {{ item }}
+      with_items: "{{ file_list }}"
+      register: file_content
+      when: file_list is defined
+
+    - name: Collect backtrace files
+      find:
+        paths: "/tmp/calibration"
+        recurse: yes
+        patterns: "backtrace.*"
+      register: backtrace_files
+
+    - name: Post results
+      debug:
+        msg: "{{ item.path }}"
+      with_items: "{{ backtrace_files.files }}"
+    # - name: Set bazel_workspace if needed
+    #   set_fact:
+    #     bazel_workspace: "AAAAAAAAAAAa"
+    #   when: coredump_filtered is not defined
+
+    # - name: Collect calibration_parameters files
+    #   find:
+    #     paths: "/tmp/calibration"
+    #     recurse: yes
+    #     patterns: "calibration_parameters*"
+    #   register: collected_files
+    # - name: DBG
+    #   debug:
+    #     msg: "{{ item.path }}"
+    #   with_items: "{{ collected_files.files }}"
+
+    # - name: Process calibration artifacts for upload
+    #   block:
+    #     - name: Find calibration files
+    #       shell: |
+    #         set -euo pipefail
+    #         shopt -s globstar
+
+    #         for file in /tmp/calibration/calibration_parameters*; do
+    #           if [ -f "$file" ]; then
+    #             echo "$file"
+    #           fi
+    #         done
+    #       register: find_results
+    #       args:
+    #         executable: /bin/bash
+
+    #     - name: Calibration files list
+    #       set_fact:
+    #         calibration_new: "{{ calibration_new | default([]) + [item] }}"
+    #       with_items: "{{ find_results.stdout_lines }}"
+
+    #     - name: DBG
+    #       debug:
+    #         msg: "{{ calibration_new }}"
+
+    # - name: Set fact for third party so libs
+    #   set_fact:
+    #     third_party_so_libs: "{{ third_party_so_libs | default([]) + [item.path] }}"
+    #   with_items: "{{ third_party_libs_files.results | map(attribute='files') | list }}"
+
+    # - name: DBG
+    #   debug:
+    #     msg: "{{ third_party_so_libs }}"
+
+    # - name: Copy third party so files to sharedlibs_bundle
+    #   copy:
+    #     src: "{{ item.path }}"
+    #     dest: "/tmp/bazel/sharedlibs_bundle"
+    #     remote_src: yes
+    #     mode: '776'
+    #   with_items: "{{ third_party_libs_files.results | map(attribute='files') | list }}"
+
+    # - name: Display all cluster names
+    #   set_fact:
+    #     third_party_libs_links: 
+    #   loop: "{{ domain_definition | community.general.json_query('domain.cluster[*].name') }}"
+    #   when: 
+
+    # - name: Generate python build script for bazel runner
+    #   template:
+    #     dest: "templates/bazel_runner_commands.py"
+    #     src: template.py.j2
+    #     mode: a+x
+
+    # - name: Create ctx data for context file
+    #   set_fact:
+    #     ctx_data_map:
+    #       timestamp: "tttt"
+    #       ipnext_dbg_snapshot: "snapshot"
+    #       ipnext_platform_dbg_snapshot: "platform"
+
+    # - debug:
+    #     msg: "{{ ctx_data_map }}"
+
+    # - debug:
+    #     msg: "{{ 'release-2502' | regex_search('^release-[0-9]{4}-ipn$') }}"
+
+    # - debug:
+    #     msg: "{{ 'release-2412-ipn' | regex_search('^release-[0-9]{4}-ipn$') }}"
+
+    # - debug:
+    #     msg: "{{ 'release-2502' | regex_search('^release[-\/][0-9]{4}.*$') }}"
+
+    # - debug:
+    #     msg: "{{ 'release-2412-ipn' | regex_search('^release[-\/][0-9]{4}.*$') }}"
+
+    # - name: Get current taskIds from tg_task_names
+    #   set_fact:
+    #     tg_tasks_current: "{{ tg_tasks_current | default([]) + [item] }}"
+    #   with_items: "{{ tg_task_names }}"
+
+    # - name: Find new unique tg_tasks
+    #   set_fact:
+    #     task_id_current_unique: "{{ tg_tasks_current | difference(tg_tasks | default([])) | unique }}"
+
+    # - name: Get taskId from tg_task_names
+    #   set_fact:
+    #     tg_tasks: "{{ tg_tasks | default([]) + [item] }}"
+    #   with_items: "{{ task_id_current_unique }}"
+
+    # - debug:
+    #     msg: "{{ tg_tasks }}"
+
+    # - name: Get current taskIds from tg_task_names
+    #   set_fact:
+    #     tg_tasks_current: []
+
+    # - name: Get current taskIds from tg_task_names
+    #   set_fact:
+    #     tg_tasks_current: "{{ tg_tasks_current | default([]) + [item] }}"
+    #   with_items: "{{ tg_task_names_2 }}"
+
+    # - name: Find new unique tg_tasks 2 ITER
+    #   set_fact:
+    #     task_id_current_unique: "{{ tg_tasks_current | difference(tg_tasks | default([])) | unique }}"
+
+    # - name: Get taskId from tg_task_names 2 ITER
+    #   set_fact:
+    #     tg_tasks: "{{ tg_tasks | default([]) + [item] }}"
+    #   with_items: "{{ task_id_current_unique }}"
+
+    # - debug:
+    #     msg: "{{ tg_tasks }}"
+
+    # - name: Collect backtrace files
+    #   find:
+    #     paths: /home/dodintsova/Documents/coredumps/extract
+    #     recurse: yes
+    #     patterns: "coredump.*"
+    #   register: backtrace_files
+
+    # - name: Backtrace short path
+    #   set_fact:
+    #     backtrace_src: "{{ backtrace_src | default([]) + [item.path] }}"
+    #   with_items: "{{ backtrace_files.files }}"
+
+    # - debug:
+    #     msg: "{{ backtrace_src }}"
+
+    # - find:
+    #     path: /home/dodintsova/Documents/coredumps/ipnext_apps_debug
+    #     file_type: directory
+    #     recurse: no
+    #   register: apps
+
+    # - set_fact:
+    #     apps_list: "{{ apps_list | default([]) + ['apps/' + item | basename] }}"
+    #   with_items: "{{ apps.files | map(attribute='path') | list }}"
+
+    # - find:
+    #     path: /home/dodintsova/Documents/coredumps/ipnext_platform_debug
+    #     file_type: directory
+    #     recurse: no
+    #   register: platform
+
+    # - set_fact:
+    #     apps_list: "{{ apps_list | default([]) + ['platform/' + item | basename] }}"
+    #   with_items: "{{ platform.files | map(attribute='path') | list }}"
+
+    # - debug:
+    #     msg: "{{ apps_list }}"

@@ -1,0 +1,28 @@
+- name: Comments in the PRs
+  hosts: localhost
+  tasks:
+    # set_fact based on 'defined' or 'undefined' var with var value condition
+    - name: Set fact_1
+      set_fact:
+        fact_def: DEFINED 234
+
+    - name: Set fact_2
+      set_fact:
+        fact_check: "{{ fact_def if fact_def is defined and fact_def == 'DEFINED' else ''}}"
+
+    - name: Set fact_3
+      set_fact:
+        fact_res: "{{ fact_def if fact_check is defined and fact_check else 'NOT DEFINED'}}"
+
+    - name: Set fact_3
+      set_fact:
+        fact_condition: >-
+          {%- if fact_check is defined and fact_check -%}
+            fact based on defined var with var value condition
+          {%- else -%}
+            "{{ fact_def | trim }}"
+          {%- endif -%}
+
+    - name: Print out fact_condition
+      debug:
+        msg: "{{ fact_condition }}"
