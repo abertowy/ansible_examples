@@ -1,0 +1,273 @@
+- name: Comments in the PRs
+  hosts: localhost
+  vars:
+    ddad_af_url: "https://ddad.artifactory.cc.bmwgroup.net/artifactory"
+    ipnext_dbg_snapshots_af: "ipnext-debug-snapshots/nightly/{{ previous_date }}/master/ipnext/collaterals/perf"
+    ipnext_dbg_tgz: "ipnext_apps_debug.tar.gz"
+    ipnext_qnx_sdp_dir: "/tmp/01/coredumps"
+    ipnext_dbg_dir: "/tmp/01/coredumps/debug"
+    extraction_script: "/home/dodintsova/work_dir/ddad/platform/aas/tools/backtrace_extraction_ci/download_coredump_and_extract_backtrace_ci.py"
+    coredumps: "/tmp/coredumps/20241009/46927/known/coredump.1616444432.pvis.3387549.core.gz,/tmp/coredumps/20241009/46927/known/coredump.1616444473.pvis.3391645.core.gz,/tmp/coredumps/20241009/46927/known/coredump.1616444457.AdMake80msAsilB.1360005.core.gz"
+    sdp_ntoaarch_gdb: "/tmp/coredumps/qnx_sdp_core/host/linux/x86_64/usr/bin/ntoaarch64-gdb"
+    sdp_gdb_data_dir: "/tmp/coredumps/qnx_sdp_core/host/linux/x86_64/usr/share/gdb"
+    sdp_env: "/tmp/coredumps/qnx_sdp_core/qnxsdp-env.sh"
+    coredumps_dst_dir: "/tmp/coredumps/20241014"
+    ssh_keys:
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIiy8mM37YAJW97iM/78CW0USqikgM4nnZgXc2S4OgJO daria.odintsova@partner.bmw.de
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJJUg2J9yEGu5WTRDdNkFtG81ntHrP+85MdisCf0k3Z6 tu-ipnext-integration-qqipni0@list.bmw.com
+    testguide_restapi_url: https://tg5.tg-prod.bmwgroup.net/api/v2
+    testguide_auth_key: 9L0DC0A=.xd7SlvKeadA9X60V-jZentkot2jILsi78sZezQdbkPY=
+    test_list:
+      - "  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current"
+      - "                                 Dload  Upload   Total   Spent    Left  Speed"
+      - ""
+      - "  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0"
+      - "100   394  100   238  100   156   1276    836 --:--:-- --:--:-- --:--:--  2106"
+      - "100   394  100   238  100   156   1275    835 --:--:-- --:--:-- --:--:--  2106"
+      - "[{\"taskId\":52022,\"name\":\"ITF_Nightly_Dev_BAT_C_Master/swh/ddad/adbf8e1d\"},{\"taskId\":52406,\"name\":\"ITF_Nightly_Dev_Full_C_Master (Rerun | 14-10-2024 | SWP-143746)\"},{\"taskId\":52016,\"name\":\"ITF_Nightly_Dev_Full_C_Master/swh/ddad/ec1efc47\"}]"
+    task_id: [5501, 5502]
+    folder_structure:
+      - "{{ ipnext_qnx_sdp_dir }}"
+      - "{{ ipnext_qnx_sdp_dir }}/qnx_sdp_core/wrappers"
+      - "{{ ipnext_dbg_dir }}/ipnext_apps_debug"
+      - "{{ ipnext_dbg_dir }}/sharedlibs_bundle"
+      # - "{{ ipnext_backtrace_dir }}"
+    secrets_check: {"name": "artifactory_secret", "secret": "af_secret"}
+      # - name: codecraft_logs
+      #   secret: codecraft_logs
+    dst_path: /tmp/coredumps
+    jobs_old: "'{\"names\": [\"ITF_Nightly_Dev_Full*Master*\", \"ITF_Nightly_Dev_BAT*Master*\"],}'"
+    nas_data:
+      jc:
+        path_to_shared_folder: "//nv018910017.bmwgroup.net/VIPN_Trace_Storage"
+        mount_path_folder: "{{ ansible_user_dir }}/VIPN_Trace_Storage"
+      ef:
+        path_to_shared_folder: "//nv018910240.bmwgroup.net/IPN_SYSAbs_Trace_Storage_2"
+        mount_path_folder: "{{ ansible_user_dir }}/IPN_SYSAbs_Trace_Storage_2"
+    branches:
+      - 'Master*"'
+      - 'Release-2410*"'
+      - 'Release-2412-ipn*"'
+    tg_data:
+      - jobs:
+          - '"ITF_ISOC_Flash_Stability*'
+          - '"AmTS_Nightly_Split*'
+          - '"ITF_Nightly_Dev*'
+          - '"ITF_Nightly_Intake*'
+          - '"ITF_Nightly_LCM_Stress*'
+          - '"ITF_Nightly_Long_term_ITF_Tests*'
+          - '"ITF_Nightly_PAS*'
+          - '"ITF_ISOC_Nightly_UPFlash*'
+          - '"ITF_Nightly_Vendor*'
+          - '"ITF_IP-Next_Nightly_Parallel_Flash*'
+          - '"ITF_UT*'
+        nas_path: "{{ nas_data.jc.mount_path_folder }}/IP-Next_POSIX_NAS_Linkage"
+        project_id: 3
+      - jobs:
+          - '"EF_ECU_Test_Nightly_Prj*'
+          - '"ITF_Nightly_Platform_EF_Activity_Benchmarks*'
+          - '"ITF_ISOC_Nightly_Pregate_Flash_EF*'
+          - '"MTF_Avb_Nightly*'
+          - '"ITF_Nightly_EF_BAT*'
+          - '"ITF_Nightly_EF_FVT*'
+          - '"ITF_Nightly_Platform_EF_Intake*'
+          - '"ITF_Nightly_Platform_EF_Pil_NoSensor*'
+          - '"ITF_Nightly_ISOC_Stability__Full_Parallel_Flash_EF*'
+          - '"ITF_ISOC_Nightly_Stability_Main_Perf_Parallel_Flash_EF*'
+          - '"ITF_Nightly_Perf_Startup_Measurements*'
+          - '"MTF_Switch_Nightly*'
+          - '"MTF_Timesync_Nightly*'
+          - '"ITF_ISOC_Flash_Stability*'
+          - '"ITF_Nightly_Platform_EF_Full*'
+        nas_path: "{{ nas_data.ef.mount_path_folder }}/01_Testguide/01_IPNext_System"
+        project_id: 4
+    branch: 'Master*"'
+    branch_lc: release-2412-ipn
+    jobs:
+      - '"ITF_ISOC_Flash_Stability*'
+      - '"AmTS_Nightly_Split*'
+      - '"ITF_Nightly_Dev*'
+    jobs_lc:
+      - '"ITF_Manual_Fasinfo*'
+    tg_b:
+      - a
+      - b
+      - c
+    sleep_vars:
+      - 10
+      - 10
+      - 10
+      - 50
+      # - 30
+      # - 30
+      # - 30
+      # - 30
+      # - 30
+      # - 30
+    coredumps_paths:
+      - "/home/zuul/VIPN_Trace_Storage/IP-Next_POSIX_NAS_Linkage/76395/test_startup.test_startup_with_dev_flash/global_info/coredumps/known/coredump.1616444416.driverecord.979086.core.gz"
+      - "/home/zuul/VIPN_Trace_Storage/IP-Next_POSIX_NAS_Linkage/76395/test_startup.test_startup_with_dev_flash/global_info/coredumps/known/coredump.1616444434.pvis.958562.core.gz"
+      # - "/home/zuul/VIPN_Trace_Storage/IP-Next_POSIX_NAS_Linkage/94344/test_startup.test_startup_with_dev_flash/global_info/testcase.test_stability_main_perf_parallel_flash.TestStabilityMainPerfParallelFlash.test_stability_main_perf_parallel_flash_1/coredumps_iteration/unknown/coredump.316026.camops.716944.core.gz"
+      - "/home/zuul/VIPN_Trace_Storage/IP-Next_POSIX_NAS_Linkage/94344/test_startup.test_startup_with_dev_flash/global_info/testcase.test_stability_main_perf_parallel_flash.TestStabilityMainPerfParallelFlash.test_stability_main_perf_parallel_flash_1/coredumps_iteration4/unknown/coredump.316026.camops.716944.core.gz"
+      - "/home/zuul/VIPN_Trace_Storage/IP-Next_POSIX_NAS_Linkage/94344/test_startup.test_startup_with_dev_flash/global_info/testcase.test_stability_main_perf_parallel_flash.TestStabilityMainPerfParallelFlash.test_stability_main_perf_parallel_flash_1/coredumps_iteration15/unknown/coredump.316026.camops.716944.core.gz"
+      - "/home/zuul/VIPN_Trace_Storage/IP-Next_POSIX_NAS_Linkage/88744/IPN-10-PERF__I450__all_2024-11-13_185804/IPN-10-PERF__I450__all__00 Setup Ethernet/01_startMiniRBS/coredump.1616444450.ParkingApp.938078.core.gz"
+      - "/home/zuul/VIPN_Trace_Storage/IP-Next_POSIX_NAS_Linkage/101136/IPN-10-PERF__I450__minimal_2024-11-26_005947/IPN-10-PERF__I450__minimal__Cert LCS/CERT_25261_Check_Status_After_Check_And_Reset/coredump.1616444401.camops.1134697.core.gz"
+      - "/home/zuul/VIPN_Trace_Storage/IP-Next_POSIX_NAS_Linkage/88744/IPN-10-PERF__I450__all_2024-11-13_185804/IPN-10-PERF__I450__all__Authentication and signature/AUS_128 Programming list persistent for dual memory ECU/coredump.1616444438.ParkingApp.938077.core.gz"
+  tasks:
+    - name: Set dest prefix
+      set_fact:
+        dst_prefix: "/tmp/coredumps/20241126/master/extracted_backtrace/"
+        mount_path_folder: "/home/zuul/VIPN_Trace_Storage/IP-Next_POSIX_NAS_Linkage/"
+        test_dummy: test_.*/coredumps/(.*)$
+        ipn_prefix: IPN-10-PERF_.*/coredump.(.*)$
+        ipn_perf_recovery: coredumps/.*/coredump.(.*)$
+        test_stability: test_.*/coredumps_iteration\d+/(.*)$
+
+    - name: Coredump path with correct dest
+      set_fact:
+        coredump_paths_dst: "{{ coredump_paths_dst | default([]) + [(item) | regex_replace(test_dummy, '\\1') | regex_replace(test_stability, '\\1') | regex_replace(ipn_perf_recovery, 'coredump.\\1') | regex_replace(ipn_prefix, 'coredump.\\1') | replace(mount_path_folder, dst_prefix)] }}"
+      with_items: "{{ coredumps_paths }}"
+
+    - name: DBG
+      debug:
+        msg: "{{ coredump_paths_dst }}"
+        # msg: "{{ 'ansible' | regex_replace('a.*i(.*)$', '\\1') }}"
+        #  '^a.*i(.*)$', 'a\\1') }}"
+
+    # - command:
+    #     cmd: cat /home/dodintsova/.netrc
+    #   register: netrc
+
+    # - debug:
+    #     msg: "{{ netrc.stdout_lines }}"
+
+
+
+    # - debug:
+    #     msg: "{{ jobs }}"
+
+    # - debug:
+    #     # msg: "{{ item[1].project_id }}"
+    #     # msg: "{{ item[1].jobs }}"
+    #     msg: "{{ item[0][:-2] | lower }}"
+    #     # msg: "{{ item[1].nas_path }}"
+    #   loop: "{{ branches | product(tg_data) | list }}"
+
+    # - name: Collect coredumps
+    #   debug:
+    #     msg: "{{ item[0] }} AND {{ item[1].jobs }}"
+    #   loop: "{{ branches | product(tg_data) | list }}"
+
+    # - name: Mount Samba share {{ item.value.path_to_shared_folder }} to {{ item.value.mount_path_folder }}
+    #   debug:
+    #     # msg: "{{ item.value.path_to_shared_folder }}"
+    #     msg: "{{ nas_data.jc.mount_path_folder }}"
+    #   register: mount_result
+    #   # loop: "{{ nas_data | dict2items }}"
+
+    # - name: Ensure the mount directory exists
+    #   debug:
+    #     msg: "{{ item.value.mount_path_folder }}"
+    #   loop: "{{ nas_data | dict2items }}"
+
+    # - name: tg_data
+    #   set_fact:
+    #     tg_jobs_wb: "{{ tg_jobs_wb | default([]) + [item + branch] }}"
+    #   with_items: "{{ jobs }}"
+
+    # - name: Check if branch == master
+    #   set_fact:
+    #     branch_lc: "master"
+    #   when: branch_lc != 'master'
+
+    # - name: tg_data
+    #   set_fact:
+    #     branch_lc_upd: "{{ branch_lc | capitalize + '*\"' }}"
+
+    # - name: tg_data
+    #   set_fact:
+    #     tg_jobs_lc: "{{ tg_jobs_lc | default([]) + [item + branch_lc_upd] }}"
+    #   with_items: "{{ jobs_lc }}"
+
+    # - name: tg_data
+    #   debug:
+    #     msg: "{{ '%Y%m%d' | strftime(ansible_date_time.epoch | int - 172800) }}"
+
+    # - set_fact:
+    #     plain_list: "{{ tg_jobs_wb | join(', ') }}"
+
+    # - debug:
+    #     msg: "'{\"names\": [{{ plain_list }}],}'"
+
+    # - set_fact:
+    #     plain_list_lc: "{{ tg_jobs_lc | join(', ') }}"
+
+    # - debug:
+    #     msg: "'{\"names\": [{{ plain_list_lc }}],}'"
+
+    # - debug:
+    #     msg: "{{ now(utc=true) }}"
+
+    # - name: Async sleeping for batched_items
+    #   command: sleep {{ item }}
+    #   with_items: "{{ sleep_vars }}"
+    #   async: 500
+    #   poll: 0
+    #   register: async_results
+
+    # - debug:
+    #     msg: "{{ now(utc=true) }}"
+
+    # - debug:
+    #     msg: "{{ item.stdout }}"
+    #   with_items: "{{ async_results.results }}"
+
+    # - name: Check sync status
+    #   async_status:
+    #     jid: "{{ item.ansible_job_id }}"
+    #   with_items: "{{ async_results.results }}"
+    #   register: async_poll_results
+    #   until: async_poll_results.finished
+    #   retries: 20
+    #   delay: 10
+
+    # - debug:
+    #     msg: "{{ now(utc=true) }}"
+
+    # - debug:
+    #     msg: "{{ item }}"
+    #   with_items: "{{ async_results.results }}"
+
+    # - name: Set fact for results
+    #   set_fact:
+    #     file_list: "{{ file_list | default([]) + [item.results_file] }}"
+    #   with_items: "{{ async_results.results }}"
+
+    # - name: Set results list
+    #   command: cat {{ item }}
+    #   with_items: "{{ file_list }}"
+    #   register: file_content
+
+    # - name: update dict w required values
+    #   set_fact:
+    #     actual_output: "{{ actual_output | default([]) + [(item.stdout | from_yaml).stdout] }}"
+    #   loop: "{{ file_content.results }}"
+
+    # - name: update dict w required values
+    #   set_fact:
+    #     result_output: "{{ result_output | default([]) + [item.stdout] }}"
+    #   with_items: "{{ actual_output }}"
+
+    # - debug:
+    #     msg: "{{ actual_output }}"
+
+    # - debug:
+    #     msg: "{{ item.stdout }}"
+    #   with_items: "{{ actual_output }}"
+
+    # - command:
+    #     cmd: cat {{ ansible_user_dir }}/.netrc
+    #   register: netrc
+
+    # - debug:
+    #     msg: "{{ netrc.stdout_lines }}"
