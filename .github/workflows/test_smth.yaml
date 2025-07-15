@@ -1,0 +1,21 @@
+name: Ansible files & Deployment for test PB
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get code
+        uses: actions/checkout@v3
+        # with:
+        #   ...
+      - name: Install Ansible
+        run: |
+           python3 -m pip install --user pipx
+           python3 -m pipx ensurepath
+           pipx install ansible
+      - name: Whare am i
+        run: pwd
+      - name: Whare am i
+        run: ls -al
+      - name: Run Ansible test PBs
+        run: ansible-playbook playbooks/tests/test_01.yaml
