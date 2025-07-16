@@ -16,10 +16,13 @@ def gh_data():
     # PR
     # gh_url = f"https://cc-github.bmwgroup.net/api/v3/repos/{args.project}/pulls/{args.pull_request}"
     # Repo
-    gh_url = f"https://api.github.com/users/{args.username}/repos/"
+    gh_url = f"https://api.github.com/users/{args.username}/repos"
     gh_headers = {"Authorization": f"Bearer {args.gh_token}"}
     result = requests.get(gh_url, headers=gh_headers).json()
-    print(result)
+    repos = []
+    for item in result:
+        repos.append(item["full_name"])
+    print(repos)
 
 
 if __name__ == "__main__":
