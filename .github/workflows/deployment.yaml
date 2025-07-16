@@ -7,32 +7,49 @@ on:
       - 'artifacts/**'
   workflow_dispatch:
 jobs:
-  prepare-workspace:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install Ansible
-        run: |
-           python3 -m pip install --user pipx
-           python3 -m pipx ensurepath
-           pipx install ansible
-  deploy:
+  build:
     runs-on: ubuntu-latest
     needs: prepare-workspace
+    outputs:
+      package-file: ${{ steps.publish.outputs.package-file }}
     steps:
+      # NOT Clear, read more about caching. Is it usefull for Ansible??
+      # - name: Cache dependencies
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: ~/ansible_examples
+      #     key: deps-codebase-${{ hashFiles() }}
       - name: Get code
         uses: actions/checkout@v3
       - name: Run deployment PB
         run: ansible-playbook deployment/deploy_01.yaml
+      - name: Publish package name
+        id: publish
+        run: find artifacts/package_*.txt -type f -execdir echo 'package-file={}' >> $GITHUB_OUTPUT ';'
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: dummy-files
           path: artifacts/*.txt
-  verify-deploy:
+  build-verify:
     runs-on: ubuntu-latest
-    needs: deploy
+    needs: build
     steps:
       - name: Get code
         uses: actions/checkout@v3
       - name: Run deployment verification PBs
         run: ansible-playbook deployment/deploy_02.yaml
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-verify
+    steps:
+      - name: Get build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dummy-files
+      - name: Output dir
+        run: ls -al
+      - name: Output filename
+        run: echo "${{ needs.build-verify.needs.build.outputs.package-file }}"
+      - name: Deployment
+        run: echo "Deploying smth ....."
