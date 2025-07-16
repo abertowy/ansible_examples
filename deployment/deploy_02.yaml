@@ -1,0 +1,19 @@
+- name: Verify dummy deployment
+  hosts: localhost
+  tasks:
+    - name: Collect artifacts
+      find:
+        paths: ../artifacts
+        recurse: yes
+        patterns: "package_*"
+      register: artifacts
+
+    - name: Cat package content
+      command: cat {{ item.path }}
+      register: package_content
+      with_items: "{{ artifacts.files }}"
+
+    - name: Show package content
+      debug:
+        msg: "{{ item.stdout }}"
+      with_items: "{{ package_content.results }}"

@@ -1,0 +1,20 @@
+name: Output information
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+    paths:
+      - 'playbooks/**'
+  push:
+    branches:
+      - main
+    paths:
+      - 'playbooks/**'
+jobs:
+  info:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Output HitHub context
+        run: echo "${{ toJSON(github.event) }}"
