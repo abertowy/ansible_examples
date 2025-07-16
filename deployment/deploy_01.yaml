@@ -1,0 +1,21 @@
+- name: Dummy deployment
+  hosts: localhost
+  tasks:
+    - name: Create a dummy package
+      command: sh ../artifacts/dummy_package.sh
+      register: create_package
+
+    - name: Set timestamp
+      set_fact:
+        timestamp: "{{ ansible_date_time.iso8601.replace(':', '-') }}"
+
+    - name: Add timestamp
+      lineinfile:
+        dest: ../artifacts/package.txt
+        line: "Deployment timestamp: {{ timestamp }}"
+        state: present
+        insertafter: EOF
+
+    - name: Rename a dummy package
+      command: mv ../artifacts/package.txt ../artifacts/package_{{ timestamp }}.txt
+      register: create_package

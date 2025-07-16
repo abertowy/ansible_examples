@@ -1,5 +1,9 @@
-name: Ansible files & Deployment for test PB
-on: [push, workflow_dispatch]
+name: Ansible Tests
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
 jobs:
   prepare-workspace:
     runs-on: ubuntu-latest
