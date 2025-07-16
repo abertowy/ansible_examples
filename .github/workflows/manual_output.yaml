@@ -1,20 +1,14 @@
 name: Output information
-on:
-  pull_request:
-    branches:
-      - main
-    types:
-      - opened
-    paths:
-      - 'playbooks/**'
-  push:
-    branches:
-      - main
-    paths:
-      - 'playbooks/**'
+on: workflow_dispatch
+env:
+  GITHUB_TOKEN: ${{ secrets.test_gh_token }}
 jobs:
   info:
     runs-on: ubuntu-latest
     steps:
       - name: Output HitHub context
-        run: echo "${{ toJSON(github.event) }}"
+        run: echo "${{ toJSON(github) }}"
+      - name: Get code
+        uses: actions/checkout@v3
+      - name: Run py script
+        run: python3 scripts/gh_script_01.py --username abertowy --gh-token $GITHUB_TOKEN
