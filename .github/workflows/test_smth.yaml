@@ -1,21 +1,27 @@
 name: Ansible files & Deployment for test PB
 on: push
 jobs:
-  test:
+  prepare-workspace:
     runs-on: ubuntu-latest
     steps:
-      - name: Get code
-        uses: actions/checkout@v3
-        # with:
-        #   ...
       - name: Install Ansible
         run: |
            python3 -m pip install --user pipx
            python3 -m pipx ensurepath
            pipx install ansible
-      - name: Whare am i
-        run: pwd
-      - name: Whare am i
-        run: ls -al
+  test_01:
+    runs-on: ubuntu-latest
+    needs: prepare-workspace
+    steps:
+      - name: Get code
+        uses: actions/checkout@v3
       - name: Run Ansible test PBs
         run: ansible-playbook playbooks/tests/test_01.yaml
+  test_02:
+    runs-on: ubuntu-latest
+    needs: prepare-workspace
+    steps:
+      - name: Get code
+        uses: actions/checkout@v3
+      - name: Run Ansible test PBs
+        run: ansible-playbook playbooks/tests/test_02.yaml
