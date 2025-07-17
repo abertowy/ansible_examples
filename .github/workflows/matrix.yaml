@@ -5,24 +5,27 @@ jobs:
     continue-on-error: true
     strategy:
       matrix:
-        ansible-version: ['ansible=9.12.0', 'ansible==8.1.0', 'ansible==10.7.0']
+        ansible-version: ['ansible=2.2.0', 'ansible==2.1.0', 'ansible==1.1.0']
         merge-pdf-version: ['merge-pdf==1.0.0', 'merge-pdf==1.0.1']
         include:
-          - ansible-version: 'ansible=9.9.0'
+          - ansible-version: 'ansible=2.0.0'
             merge-pdf-version: 'merge-pdf==1.0.1'
         exclude:
-          - ansible-version: 'ansible=10.7.0'
+          - ansible-version: 'ansible=2.2.0'
             merge-pdf-version: 'merge-pdf==1.0.0'
     runs-on: ubuntu-latest
     steps:
-      - name: Install Ansible
+      - name: Show Ansible versions
         run: |
            python3 -m pip install --user pipx
            python3 -m pipx ensurepath
-           pipx install ${{ matrix.ansible-version }}
+           pipx index versions ansible
+      - name: Show Merge PDF versions
+        run: pipx index versions  merge-pdf
+      - name: Install Ansible
+        run: pipx install ${{ matrix.ansible-version }}
       - name: Install Merge PDF
-        run: |
-           pipx install ${{ matrix.merge-pdf-version }}
+        run: pipx install ${{ matrix.merge-pdf-version }}
   output-info:
     uses: ./.github/workflows/manual_output.yaml
     with:
@@ -34,4 +37,4 @@ jobs:
       runs-on: ubuntu-latest
       steps:
         - name: Output info
-          run: echo "${{ needs.output-info.outputs.result }}""
+          run: echo "${{ needs.output-info.outputs.result }}"
