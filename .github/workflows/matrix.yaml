@@ -15,17 +15,13 @@ jobs:
             merge-pdf-version: 'merge-pdf==1.0.0'
     runs-on: ubuntu-latest
     steps:
-      - name: Show Ansible versions
+      - name: Install Ansible
         run: |
            python3 -m pip install --user pipx
            python3 -m pipx ensurepath
-           pipx index versions ansible
-      - name: Show Merge PDF versions
-        run: pipx index versions  merge-pdf
-      - name: Install Ansible
-        run: pipx install ${{ matrix.ansible-version }}
+           pipx --verbose install ${{ matrix.ansible-version }}
       - name: Install Merge PDF
-        run: pipx install ${{ matrix.merge-pdf-version }}
+        run: pipx --verbose install ${{ matrix.merge-pdf-version }}
   output-info:
     uses: ./.github/workflows/manual_output.yaml
     with:
