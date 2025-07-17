@@ -28,10 +28,10 @@ jobs:
       - name: Get code
         uses: actions/checkout@v3
       - name: Run py script
-        if: $GITHUB_TOKEN
+        if: env.GITHUB_TOKEN
         run: python3 scripts/gh_script_01.py --username abertowy --gh-token $GITHUB_TOKEN
       - name: Run py script
-        if: not $GITHUB_TOKEN
+        if: not env.GITHUB_TOKEN
         run: python3 scripts/gh_script_01.py --username abertowy --gh-token ${{ secrets.gh_secret }}
       - name: Print out smth
         run: echo ${{ inputs.package }}
