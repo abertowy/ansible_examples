@@ -12,6 +12,9 @@ on:
       result:
         description: The output result
         value: ${{ jobs.info.outputs.outcome }}
+  secrets:
+    gh_secret:
+      required: true
 env:
   GITHUB_TOKEN: ${{ secrets.test_gh_token }}
 jobs:
@@ -25,7 +28,11 @@ jobs:
       - name: Get code
         uses: actions/checkout@v3
       - name: Run py script
+        if: $GITHUB_TOKEN
         run: python3 scripts/gh_script_01.py --username abertowy --gh-token $GITHUB_TOKEN
+      - name: Run py script
+        if: not $GITHUB_TOKEN
+        run: python3 scripts/gh_script_01.py --username abertowy --gh-token ${{ secrets.gh_secret }}
       - name: Print out smth
         run: echo ${{ inputs.package }}
       - name: Set result output

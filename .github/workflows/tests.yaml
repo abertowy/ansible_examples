@@ -5,17 +5,8 @@ on:
       - main
   workflow_dispatch:
 jobs:
-  prepare-workspace:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install Ansible
-        run: |
-           python3 -m pip install --user pipx
-           python3 -m pipx ensurepath
-           pipx install ansible
   test_01:
     runs-on: ubuntu-latest
-    needs: prepare-workspace
     steps:
       - name: Get code
         uses: actions/checkout@v3
@@ -24,7 +15,6 @@ jobs:
         run: ansible-playbook tests/test_01.yaml
   test_02:
     runs-on: ubuntu-latest
-    needs: prepare-workspace
     steps:
       - name: Get code
         uses: actions/checkout@v3
@@ -37,12 +27,12 @@ jobs:
         with:
           name: test-report
           path: tests/*.json
-    report:
-      needs: [test_01, test_02]
-      runs-on: ubuntu-latest
-      if: failure()
-      steps:
-        - name: Output info
-          run: |
-            echo "Smth went wrong"
-            echo "${{ toJSON(github) }}"
+  report:
+    needs: [test_01, test_02]
+    runs-on: ubuntu-latest
+    if: failure()
+    steps:
+      - name: Output info
+        run: |
+          echo "Smth went wrong"
+          echo "${{ toJSON(github) }}"
