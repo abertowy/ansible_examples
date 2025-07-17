@@ -1,10 +1,24 @@
 name: Output information
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      package:
+        description: Dummy package name
+        required: false
+        default: 'package-1.1.0'
+        type: string
+    outputs:
+      result:
+        description: The output result
+        value: ${{ jobs.info.outputs.outcome }}
 env:
   GITHUB_TOKEN: ${{ secrets.test_gh_token }}
 jobs:
   info:
     runs-on: ubuntu-latest
+    outputs:
+      outcome: ${{ steps.result-value.outputs.step-result }}
     steps:
       - name: Output HitHub context
         run: echo "${{ toJSON(github) }}"
@@ -12,3 +26,8 @@ jobs:
         uses: actions/checkout@v3
       - name: Run py script
         run: python3 scripts/gh_script_01.py --username abertowy --gh-token $GITHUB_TOKEN
+      - name: Print out smth
+        run: echo ${{ inputs.package }}
+      - name: Set result output
+        id: result-value
+        run: echo "::set-output name=step-result::success"
