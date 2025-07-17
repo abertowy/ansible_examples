@@ -9,7 +9,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    needs: prepare-workspace
     outputs:
       package-file: ${{ steps.publish.outputs.package-file }}
     steps:
