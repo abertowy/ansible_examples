@@ -5,23 +5,21 @@ jobs:
     continue-on-error: true
     strategy:
       matrix:
-        ansible-version: ['ansible=2.2.0', 'ansible==2.1.0', 'ansible==1.1.0']
-        merge-pdf-version: ['merge-pdf==1.0.0', 'merge-pdf==1.0.1']
+        package: ['ansible', 'merge-pdf']
+        option: ['--quiet', '--verbose']
         include:
-          - ansible-version: 'ansible=2.0.0'
-            merge-pdf-version: 'merge-pdf==1.0.1'
+          - package: 'zuul-client'
+            option: '--verbose'
         exclude:
-          - ansible-version: 'ansible=2.2.0'
-            merge-pdf-version: 'merge-pdf==1.0.0'
+          - package: 'merge-pdf'
+            option: '--quiet'
     runs-on: ubuntu-latest
     steps:
-      - name: Install Ansible
+      - name: Install package
         run: |
            python3 -m pip install --user pipx
            python3 -m pipx ensurepath
-           pipx --verbose install ${{ matrix.ansible-version }}
-      - name: Install Merge PDF
-        run: pipx --verbose install ${{ matrix.merge-pdf-version }}
+           pipx ${{ matrix.option }} install ${{ matrix.package }}
   output-info:
     uses: ./.github/workflows/manual_output.yaml
     with:
