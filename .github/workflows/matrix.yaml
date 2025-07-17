@@ -1,0 +1,35 @@
+name: Ansible Configurable Matrix
+on: workflow_dispatch
+jobs:
+  prepare-workspace:
+    continue-on-error: true
+    strategy:
+      matrix:
+        ansible-version: ['ansible=9.12.0', 'ansible==8.1.0', 'ansible==10.7.0']
+        merge-pdf-version: ['merge-pdf==1.0.0', 'merge-pdf==1.0.1']
+        include:
+          - ansible-version: 'ansible=9.9.0'
+            merge-pdf-version: 'merge-pdf==1.0.1'
+        exclude:
+          - ansible-version: 'ansible=10.7.0'
+            merge-pdf-version: 'merge-pdf==1.0.0'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Ansible
+        run: |
+           python3 -m pip install --user pipx
+           python3 -m pipx ensurepath
+           pipx install ${{ matrix.ansible-version }}
+      - name: Install Merge PDF
+        run: |
+           pipx install ${{ matrix.merge-pdf-version }}
+  output-info:
+    uses: ./.github/workflows/manual_output.yaml
+    with:
+      package: 'package-8.8.8'
+  report:
+      needs: output-info
+      runs-on: ubuntu-latest
+      steps:
+        - name: Output info
+          run: echo "${{ needs.output-info.outputs.result }}""

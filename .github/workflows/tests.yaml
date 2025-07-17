@@ -20,6 +20,7 @@ jobs:
       - name: Get code
         uses: actions/checkout@v3
       - name: Run Ansible test PBs
+        # continue-on-error: true
         run: ansible-playbook tests/test_01.yaml
   test_02:
     runs-on: ubuntu-latest
@@ -28,4 +29,20 @@ jobs:
       - name: Get code
         uses: actions/checkout@v3
       - name: Run Ansible test PBs
+        id: test-02
         run: ansible-playbook tests/test_02.yaml
+      - name: Upload test report
+        if: failure() && steps.test-02.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: tests/*.json
+    report:
+      needs: [test_01, test_02]
+      runs-on: ubuntu-latest
+      if: failure()
+      steps:
+        - name: Output info
+          run: |
+            echo "Smth went wrong"
+            echo "${{ toJSON(github) }}"

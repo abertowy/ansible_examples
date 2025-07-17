@@ -9,3 +9,8 @@
     - name: Current timestamp
       debug:
         msg: "{{ ansible_date_time.iso8601 }}"
+
+    - name: Dummy test result file
+      file:
+        path: test_results.json
+        state: touch
