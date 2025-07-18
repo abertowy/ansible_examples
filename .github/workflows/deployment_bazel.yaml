@@ -1,0 +1,33 @@
+name: Ansible Deployment
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'bazel/**'
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      package-file: ${{ steps.build_result.outputs.package }}
+    steps:
+      - name: Get code
+        uses: actions/checkout@v3
+      - name: mkdir for bzl output
+        run: mkdir -p /tmp/build_output/
+      - name: Run bazel in Docker container
+        id: bazel_build
+        run: docker run -p 8888:8888 -e USER="$(id -u)" -u="$(id -u)"
+         -v "$(pwd)":/workspace -v /tmp/build_output:/tmp/build_output
+         -w /workspace gcr.io/bazel-public/bazel:latest
+         --output_user_root=/tmp/build_output build //...
+      - name: bazel output dir
+        id: bazel-bin
+        run: echo "result=$(realpath bazel-bin)" >> $GITHUB_OUTPUT
+      - name: List output dir
+        id: package_name
+        run: echo "result=$(ls ${{ steps.bazel-bin.outputs.result }}/bazel/expand_template)" >> $GITHUB_OUTPUT
+      - name: Show package
+        id: build_result
+        run: echo echo "package=${{ steps.bazel-bin.outputs.result }}/${{ steps.package_name.outputs.result }}" >> $GITHUB_OUTPUT

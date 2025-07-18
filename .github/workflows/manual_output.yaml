@@ -37,4 +37,4 @@ jobs:
         run: echo ${{ inputs.package }}
       - name: Set result output
         id: result-value
-        run: echo "::set-output name=step-result::success"
+        run: echo "{step-result}=${{ failure() }}" >> $GITHUB_OUTPUT
