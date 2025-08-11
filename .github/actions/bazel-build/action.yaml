@@ -1,10 +1,11 @@
-name: "Bazel build action"
-description: "Build smth with Bazel"
+name: 'Bazel build action'
+description: 'Build smth with Bazel'
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
     - name: mkdir for bzl output
       run: mkdir -p /tmp/build_output/
+      shell: bash
     - name: Run bazel in Docker container
       id: bazel_build
       run: docker run -p 8888:8888 -e USER="$(id -u)" -u="$(id -u)"
