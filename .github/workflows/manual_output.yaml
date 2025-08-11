@@ -19,6 +19,7 @@ env:
   GITHUB_TOKEN_MY: ${{ secrets.test_gh_token }}
 permissions:
   issues: read
+  # read more: https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax?productId=actions#permissions
 jobs:
   info:
     runs-on: ubuntu-latest
