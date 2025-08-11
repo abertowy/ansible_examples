@@ -1,4 +1,4 @@
-name: Ansible Deployment
+name: Ansible Deployment (Bazel)
 on:
   pull_request:
     branches:
@@ -15,7 +15,7 @@ jobs:
       - name: Get code
         uses: actions/checkout@v3
       - name: Bazel build
-        uses: ./.github/actions/bazel_build
+        uses: .github/actions/bazel_build
       - name: bazel output dir
         id: bazel-bin
         run: echo "result=$(realpath bazel-bin)" >> $GITHUB_OUTPUT
