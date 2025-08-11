@@ -15,13 +15,8 @@ jobs:
       - name: Get code
         uses: actions/checkout@v3
       - name: Bazel build
+        id: bazel_build
         uses: ./.github/actions/bazel-build/
-      - name: bazel output dir
-        id: bazel-bin
-        run: echo "result=$(realpath bazel-bin)" >> $GITHUB_OUTPUT
-      - name: List output dir
-        id: package_name
-        run: echo "result=$(ls ${{ steps.bazel-bin.outputs.result }}/bazel/expand_template)" >> $GITHUB_OUTPUT
       - name: Show package
         id: build_result
-        run: echo echo "package=${{ steps.bazel-bin.outputs.result }}/${{ steps.package_name.outputs.result }}" >> $GITHUB_OUTPUT
+        run: echo echo "package=${{ steps.bazel_build.outputs.bazel_bin }}/${{ steps.bazel_build.outputs.bazel_output }}" >> $GITHUB_OUTPUT
