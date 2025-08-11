@@ -7,6 +7,16 @@ on:
 jobs:
   test_01:
     runs-on: ubuntu-latest
+    # container:
+    #   image: alpine/ansible
+    # services:
+    #   mongodb:
+    #     image: mongo
+    #     ports:
+    #       - 27017:27017
+    #     env:
+    #       MONGODB_INITDB_ROOT_USERNAME: root
+    #       MONGODB_INITDB_ROOT_PASSWORD: example
     steps:
       - name: Get code
         uses: actions/checkout@v3
