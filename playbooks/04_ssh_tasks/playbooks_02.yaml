@@ -32,7 +32,7 @@
       failed_when: false
 
     - name: Display ssh file
-      command: cat {{ ansible_user_dir }}/.ssh/id_rsa_c0f716a9f01b1f694082cc189f8e316b826a02b9
+      command: cat {{ ansible_user_dir }}/.ssh/id_rsa_abcd0123
       register: first_key
       failed_when: false
 
@@ -42,7 +42,7 @@
       failed_when: false
 
     - name: Connect via first ssh
-      command: ssh -i {{ ansible_user_dir }}/.ssh/id_rsa_c0f716a9f01b1f694082cc189f8e316b826a02b9 -v git@cc-github.bmwgroup.net
+      command: ssh -i {{ ansible_user_dir }}/.ssh/id_rsa_abcd0123 -v git@cc-github.bmwgroup.net
       register: first_key_res
       failed_when: false
 
@@ -55,7 +55,7 @@
       shell: |
         eval "$(ssh-agent)"
         ssh-add -l
-        ssh-add ~/.ssh/id_rsa_c0f716a9f01b1f694082cc189f8e316b826a02b9
+        ssh-add ~/.ssh/id_rsa_abcd0123
         ssh-add -l
       register: ssh_agent
       failed_when: false
@@ -66,7 +66,7 @@
       failed_when: false
 
     - name: Connect via second ssh
-      command: ssh -i {{ ansible_user_dir }}/.ssh/id_rsa_c0f716a9f01b1f694082cc189f8e316b826a02b9 git@cc-github.bmwgroup.net
+      command: ssh -i {{ ansible_user_dir }}/.ssh/id_rsa_klmn7890 git@cc-github.bmwgroup.net
       register: second_key_res
       failed_when: false
 

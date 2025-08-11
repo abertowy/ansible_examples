@@ -1,0 +1,120 @@
+- name: REGEXP
+  hosts: localhost
+  vars:
+    tg_task_names: [1, 2, 5, 2, 1, 5, 2, 3, 4]
+    tg_coredumps:
+      - "/tmp/Storage/Linkage/314282/Setup Ethernet_2025-05-05_234950/02_createHashes/coredump.1616444568.aaa.364661.core.gz"
+      - "/tmp/Storage/Linkage/314282/coredumps/esys_flash/iteration_4/coredump.1616444450.bbb.557202.core.gz"
+    bazel_out: "/tmp/<some_path>"
+    calibration_script: "/tmp/calibration_parameter_check.py"
+    calibration:
+      - "/tmp/k8-fastbuild-rewind_history_lin/calibration_parameters.json"
+      - "/tmp/k8-fastbuild/calibration_parameters.json"
+      - "smth"
+    zuul:
+      - branch: master
+        project:
+          canonical_hostname: github.com
+          canonical_name: github.com/abertowy/ansible_examples
+          name: abertowy/ansible_examples
+      - branch: master
+        project:
+          canonical_hostname: cc-github.bmwgroup.net
+          canonical_name: github.com/abertowy/bazel_examples
+          name: abertowy/bazel_examples
+  tasks:
+    - name: Collect calibration_parameters files
+      find:
+        paths: "{{ bazel_out }}"
+        recurse: yes
+        patterns: "calibration_parameters.json"
+      register: collected_files
+
+    - name: Calibration files list
+      set_fact:
+        calibration_list: "{{ calibration_list | default([]) + [ item.path ] }}"
+      with_items: "{{ collected_files.files }}"
+
+    - name: Calibration files to str
+      set_fact:
+        calibration_files: "{{ calibration_list | join(',') }}"
+
+    - name: Fix dst filenames
+      set_fact:
+        calibration_files_dst: "{{ calibration_files_dst | default([]) + [((item) | regex_search('rewind_history') | string != 'None') | ternary('calibration_parameters_master.json', 'calibration_parameters_change.json')] }}"
+      with_items: "{{ calibration }}"
+
+    - debug:
+        msg: "AAAAAA"
+      with_items: "{{ zuul }}"
+      when: item.project.name == 'swh/ddad_ci_config'
+
+    # REGEXP
+    - name: Set dest prefix
+      set_fact:
+        dst_prefix: "/tmp/master/extracted_backtrace"
+        amts_trs_prefix: (\d{5,}).*/coredump.(.*)$
+        mount_path_folder: "/tmp/Storage/Linkage"
+
+    - name: Coredump path with correct dest
+      set_fact:
+        coredump_filtered: "{{ coredump_filtered | default([]) + [(item) | regex_replace(amts_trs_prefix, '\\1/coredump.\\2') | replace(mount_path_folder, dst_prefix)] }}"
+      with_items: "{{ tg_coredumps }}"
+
+    - name: Context path
+      set_fact:
+        context_paths: "{{ context_paths | default([]) + [(item) | replace('coredump.', 'context.')] }}"
+        context_prefix: (.*)/(\d{5,}).*/context.(.*)$
+      with_items: "{{ tg_coredumps }}"
+
+    - name: Context short path
+      set_fact:
+        context_short_paths: "{{ context_short_paths | default([]) + [(item) | regex_replace(context_prefix, '\\2/context.\\3')] }}"
+      with_items: "{{ context_paths }}"
+
+    # DO SMTH with str equal condition
+    - name: Post label to PR if files are not equal
+      debug:
+        msg: "parameter_change"
+      when:
+        - check_result.stdout | regex_search('[ERROR] Calibration parameters check. Files are not equal')
+
+    - name: Prepare cgheck result
+      set_fact:
+        files_equal: "{{ '[INFO] Calibration parameters check. Files are equal' in check_result.stdout }}"
+
+    - name: Post label to PR if files are equal
+      debug:
+        msg: "no_parameter_change"
+      when: check_result.stdout == '[INFO] Calibration parameters check. Files are equal'
+
+    - name: Post label to PR if files are equal
+      debug:
+        msg: "no_parameter_change"
+      when: "{{ 'swh/ddad' not in third_party_libs }}"
+
+    - name: Set dummy fact
+      set_fact:
+        check_fact: "{{ check_fact | default([]) + third_party_libs_short }}"
+      when: "{{ 'aaa' in third_party_libs_short }}"
+
+    - debug:
+        msg: "{{ 'release-2502' | regex_search('^release-[0-9]{4}-ipn$') }}"
+
+    - debug:
+        msg: "{{ 'release-2412-ipn' | regex_search('^release-[0-9]{4}-ipn$') }}"
+
+    - debug:
+        msg: "{{ 'release-2502' | regex_search('^release[-\/][0-9]{4}.*$') }}"
+
+    - debug:
+        msg: "{{ 'release-2412-ipn' | regex_search('^release[-\/][0-9]{4}.*$') }}"
+
+    - name: Get current taskIds from tg_task_names
+      set_fact:
+        tg_tasks_current: "{{ tg_tasks_current | default([]) + [item] }}"
+      with_items: "{{ tg_task_names }}"
+
+    - name: Find new unique tg_tasks
+      set_fact:
+        task_id_current_unique: "{{ tg_tasks_current | difference(tg_tasks | default([])) | unique }}"

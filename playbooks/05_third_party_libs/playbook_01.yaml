@@ -1,0 +1,49 @@
+- name: Third party libs
+  hosts: localhost
+  vars:
+    third_party_libs_home:
+      - "/tmp/coredumps/missed_libs/third_party_src"
+    third_party_libs:
+      - "libaaa"
+      - "libbbb"
+      - "libccc"
+      - "libddd"
+    json_file: "af_libs.json"
+  tasks:
+    - name: Slurp json
+      slurp:
+        src: "{{ json_file }}"
+      register: json_slurped
+
+    - name: Create ctx data for context file
+      set_fact:
+        version_file: "{{ json_slurped ['content'] | b64decode | from_json }}"
+
+    - name: Set third_party_libs_links
+      set_fact:
+        third_party_libs_links: "{{ third_party_libs_links | default([]) + [{'library_name': item.library_name, 'url': item.urls[0] } ] }}"
+      with_items: "{{ version_file.libraries }}"
+      when: item.library_name in third_party_libs
+
+    - name: Print lib urls
+      debug:
+        msg: "{{ item.url.split('/')[-1] }}"
+      with_items: "{{ third_party_libs_links }}"
+
+    - name: Collect so files
+      find:
+        paths: "{{ item }}"
+        recurse: yes
+        patterns:
+          - "*.a*"
+          - "*.so*"
+      register: third_party_libs_files
+      with_items: "{{ third_party_libs_home }}"
+
+    - name: Copy third party so files to sharedlibs_bundle
+      copy:
+        src: "{{ item.path }}"
+        dest: "/tmp/missed_libs/third_party"
+        remote_src: yes
+        mode: '776'
+      with_items: "{{ third_party_libs_files.results | map(attribute='files') | list }}"

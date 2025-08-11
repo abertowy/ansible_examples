@@ -1,13 +1,13 @@
-- name: Comments in the PRs
+- name: TG tasks
   hosts: localhost
   vars:
-    af_url: "https://af-url.net/artifactory"
+    af_url: "https://<af_url>"
     dbg_snapshots_af: "debug-snapshots/nightly/{{ previous_date }}/master"
     apps_dbg_tgz: "apps_debug.tar.gz"
     qnx_sdp_dir: "/tmp/01/coredumps"
     dbg_dir: "/tmp/01/coredumps/debug"
     extraction_script: "/some_path/extract_backtrace_ci.py"
-    coredumps: "/tmp/coredumps/20241009/46927/known/coredump.1616444432.pvis.3387549.core.gz,/tmp/coredumps/20241009/46927/known/coredump.1616444473.pvis.3391645.core.gz,/tmp/coredumps/20241009/46927/known/coredump.1616444457.AdMake80msAsilB.1360005.core.gz"
+    coredumps: "/tmp/coredumps/19721009/46927/known/coredump.1616444432.aaa.3387549.core.gz,/tmp/coredumps/19721009/46927/known/coredump.1616444473.bbb.3391645.core.gz,/tmp/coredumps/19721009/46927/known/coredump.1616444457.ccc.1360005.core.gz"
     sdp_ntoaarch_gdb: "/tmp/coredumps/qnx_sdp_core/host/linux/x86_64/usr/bin/ntoaarch64-gdb"
     sdp_gdb_data_dir: "/tmp/coredumps/qnx_sdp_core/host/linux/x86_64/usr/share/gdb"
     sdp_env: "/tmp/coredumps/qnx_sdp_core/qnxsdp-env.sh"
@@ -15,7 +15,7 @@
     ssh_keys:
       - ssh-ed25519 AAAAC3Nza... techuser01@partner.de
       - ssh-ed25519 AAAAC3Nza... techuser02@partner.de
-    testguide_restapi_url: https://tg5.tg-prod.net/api/v2
+    testguide_restapi_url: https://<tg_api_url>
     testguide_auth_key: testguide_auth_key_copy_here
     test_list:
       - "  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current"
@@ -37,7 +37,7 @@
         secret: codecraft_logs
     dst_path: /tmp/coredumps
     jira_auth_key: < paste smth >
-    coredump_url: ["https://jira.cc.host.net/secure/attachment/4417773/coredump.1616444415.AdMake80msAsilBComHandler.1945746.core.gz"]
+    coredump_url: ["https://jira.cc.host.net/secure/attachment/4417773/coredump.1616444415.ccc.1945746.core.gz"]
   tasks:
     - name: Download coredump files
       get_url:
@@ -117,7 +117,7 @@
 
     - name: Download command
       get_url:
-        url: https://artifactory.cc.net/artifactory/some_path/apps_debug.tar.gz
+        url: https://<af_url>/<some_path>/apps_debug.tar.gz
         dest: "{{ dbg_dir }}"
         timeout: 500
 
@@ -132,14 +132,14 @@
       pip:
         name: requests~=2.31.0
         executable: pip3
-        extra_args: --index-url=https://artifactory.cc.net/artifactory/api/pypi/ddad-pypi/simple
+        extra_args: --index-url=https://<af_api_url>/pypi/<some_path>/simple
 
     - name: Set fact_3
       set_fact:
         tasks: [49437, 49366]
-        tg_tasks: [{'taskId': 49437, 'name': 'ITF_Nightly_Dev_BAT_C_Master/swh/ddad/dc6f3460'}, {'taskId': 49366, 'name': 'ITF_Nightly_Dev_Full_C_Master/swh/ddad/d5f5c940'}]
-        coredumps: ['/tmp/coredumps/20241011/49437/known/coredump.1616444420.AdMake80msDiagnostic.1339527.core.gz', '/tmp/coredumps/20241011/49437/known/coredump.1616444419.AdMake40msAsilB.1335428.core.gz', '/tmp/coredumps/20241011/49366/known/coredump.1616444420.pviz.1339527.core.gz',]
-        backtraces: ['/49437/known/backtrace.coredump.1616444420.AdMake80msDiagnostic.1339527.core.gz', '/49366/known/backtrace.coredump.1616444420.pviz.1339527.core.gz',]
+        tg_tasks: [{'taskId': 49437, 'name': 'Master/dc6f3460'}, {'taskId': 49366, 'name': 'Full/d5f5c940'}]
+        coredumps: ['/tmp/coredumps/19721011/49437/known/coredump.1616444420.ccc.1339527.core.gz', '/tmp/coredumps/19721011/49437/known/coredump.1616444419.ddd.1335428.core.gz', '/tmp/coredumps/19721011/49366/known/coredump.1616444420.eee.1339527.core.gz',]
+        backtraces: ['/49437/known/backtrace.coredump.1616444420.ccc.1339527.core.gz', '/49366/known/backtrace.coredump.1616444420.eee.1339527.core.gz',]
 
     - name: Create ctx data
       set_fact:
@@ -160,8 +160,8 @@
       set_fact:
         ctx_data: "{'timestamp': {{ ansible_date_time.iso8601 }}, 'tasks': {{ task_data }} }"
 
-    - name: Get taskId&name of ipnext-tesguide jobs from TestGuide REST API
-      command: "curl -X POST {{ testguide_restapi_url }}/execution/task/filter?projectId=3&fields=taskId,name&authKey={{ testguide_auth_key }} -H 'accept: application/json' -H 'Content-Type: application/json' -d '{\"names\": [\"ITF_Nightly_Dev_Full*Master*\", \"ITF_Nightly_Dev_BAT*Master*\"], \"creationDate\": {\"from\": \"{{ '%Y-%m-%dT%H:%M:%SZ' | strftime(ansible_date_time.epoch|int - 86400) }}\", \"to\": \"{{ ansible_date_time.iso8601 }}\" } }' -k"
+    - name: Get taskId&name of tg jobs from TestGuide REST API
+      command: "curl -X POST {{ testguide_restapi_url }}/execution/task/filter?projectId=3&fields=taskId,name&authKey={{ testguide_auth_key }} -H 'accept: application/json' -H 'Content-Type: application/json' -d '{\"names\": [\"Dev_Full*Master*\", \"Dev_BAT*Master*\"], \"creationDate\": {\"from\": \"{{ '%Y-%m-%dT%H:%M:%SZ' | strftime(ansible_date_time.epoch|int - 86400) }}\", \"to\": \"{{ ansible_date_time.iso8601 }}\" } }' -k"
       register: tg_task_names
 
     - name: DBG Info
@@ -199,22 +199,11 @@
       with_items: "{{ backtrace_paths.stdout }}"
       ignore_errors: true
 
-    - name: DBG Info
-      debug:
-        msg: "{{ item.stdout_lines }}"
-      with_items: "{{ backtrace_results.results }}"
-      ignore_errors: true
-
     - find:
         paths: "{{ coredumps_dst_dir }}"
         recurse: yes
         patterns: "backtrace.*"
       register: bactrace_files
-
-    - name: DBG Info
-      debug:
-        msg: "{{ bactrace_files }}"
-      ignore_errors: true
 
     - name: Backtrace short path
       set_fact:
@@ -225,11 +214,6 @@
       set_fact:
         backtrace_sub_paths: "{{ backtrace_sub_paths | default([]) + [item.split('/backtrace')[0]] }}"
       with_items: "{{ backtrace_short_paths }}"
-
-    - name: DBG Info
-      debug:
-        msg: "{{ backtrace_sub_paths }}"
-      ignore_errors: true
 
     - name: DBG Info
       debug:
@@ -249,7 +233,3 @@
       set_fact:
         coredump_paths: "{{ coredump_paths | default([]) + [item.path] }}"
       with_items: "{{ files_to_copy.results | map(attribute='files') | list }}"
-
-    - debug:
-        msg: "It is alive"
-      when: coredump_paths is not defined

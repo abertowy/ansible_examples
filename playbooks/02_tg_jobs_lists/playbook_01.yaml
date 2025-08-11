@@ -1,0 +1,108 @@
+- name: TG jobs lists operations
+  hosts: localhost
+  vars:
+    nas_data:
+      aa:
+        path_to_shared_folder: "//<path_to_shared_aa>"
+        mount_path_folder: "{{ ansible_user_dir }}/shared_aa"
+      bb:
+        path_to_shared_folder: "//<path_to_shared_bb>"
+        mount_path_folder: "{{ ansible_user_dir }}/shared_bb"
+    branches:
+      - 'Master*"'
+      - 'Release-2410*"'
+      - 'Release-2412-ipn*"'
+    tg_data:
+      - jobs:
+          - '"AA_Stability*'
+          - '"AA_Nightly_Split*'
+          - '"AA_Nightly_Dev*'
+        nas_path: "{{ nas_data.aa.mount_path_folder }}/<some_path>"
+        host: aa_samba_addr
+        tech_user: techuser_aa@abc
+        project_id: 1
+      - jobs:
+          - '"BB_Nightly_BAT*'
+          - '"BB_Nightly_FVT*'
+          - '"BB_Switch_Nightly*'
+        nas_path: "{{ nas_data.bb.mount_path_folder }}/<some_path>"
+        host: bb_samba_addr
+        tech_user: techuser_bb@abc
+        project_id: 2
+    branch: 'Master*"'
+    branch_lc: release-2412-ipn
+    jobs:
+      - '"AA_Flash_Stability*'
+      - '"BB_Nightly_Split*'
+      - '"CC_Nightly_Dev*'
+    jobs_lc:
+      - '"ITF_Manual_Fasinfo*'
+  tasks:
+    - name: Matrix
+      debug:
+        msg: "{{ item[0] }} AND {{ item[1].jobs }}"
+      loop: "{{ branches | product(tg_data) | list }}"
+
+    - name: Show dict items
+      debug:
+        msg: "{{ item.value.path_to_shared_folder }}"
+      register: mount_result
+      loop: "{{ nas_data | dict2items }}"
+
+    # Some operations with branch names
+    - name: Set new list for tg_jobs with branch name
+      set_fact:
+        tg_jobs_wb: "{{ tg_jobs_wb | default([]) + [item + branch] }}"
+      with_items: "{{ jobs }}"
+
+    - name: Check if branch == master
+      set_fact:
+        branch_lc: "master"
+      when: branch_lc != 'master'
+
+    - name: Capitalize low_case branch name
+      set_fact:
+        branch_lc_upd: "{{ branch_lc | capitalize + '*\"' }}"
+
+    - name: Set new list for tg_jobs with updated branch name
+      set_fact:
+        tg_jobs_lc: "{{ tg_jobs_lc | default([]) + [item + branch_lc_upd] }}"
+      with_items: "{{ jobs_lc }}"
+
+    - set_fact:
+        plain_list: "{{ tg_jobs_wb | join(', ') }}"
+
+    - debug:
+        msg: "'{\"names\": [{{ plain_list }}],}'"
+
+    - set_fact:
+        plain_list_lc: "{{ tg_jobs_lc | join(', ') }}"
+
+    - debug:
+        msg: "'{\"names\": [{{ plain_list_lc }}],}'"
+
+    - name: Dummy list
+      set_fact:
+        creds:
+          - credentials
+          - smb_credentials
+
+    - name: list to string
+      set_fact:
+        creds_str: "{{ creds | join(',') }}"
+      when: creds is defined and creds
+
+    - name: Print to console
+      debug:
+        msg: "{{ creds_str | default(' No values') }}"
+
+    - name: Append dict (nas_data)
+      vars:
+        pattern: "machine {{ item.value.host }}"
+      set_fact:
+        nas_data: "{{ nas_data | combine({ item.key: nas_data[item.key] | combine({'smb_creds': 'username=' + item.value.tech_user + ',password=' + pattern }) }) }}"
+      loop: "{{ nas_data | dict2items }}"
+
+    - name: Print to console
+      debug:
+        msg: "{{ nas_data }}"
