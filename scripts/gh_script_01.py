@@ -12,10 +12,10 @@ def gh_data():
     parser.add_argument("--username", required=False)
 
     args = parser.parse_args()
-    # gh_token = os.environ.get("GITHUB_TOKEN")
-    # PR
-    # gh_url = f"https://cc-github.bmwgroup.net/api/v3/repos/{args.project}/pulls/{args.pull_request}"
-    # Repo
+    # # gh_token = os.environ.get("GITHUB_TOKEN")
+    # # PR
+    # # gh_url = f"https://cc-github.bmwgroup.net/api/v3/repos/{args.project}/pulls/{args.pull_request}"
+    # # Repo
     gh_url = f"https://api.github.com/users/{args.username}/repos"
     gh_headers = {"Authorization": f"Bearer {args.gh_token}"}
     result = requests.get(gh_url, headers=gh_headers).json()
