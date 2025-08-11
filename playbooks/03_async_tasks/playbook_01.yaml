@@ -1,0 +1,62 @@
+- name: Comments in the PRs
+  hosts: localhost
+  vars:
+    sleep_vars:
+      - 10
+      - 10
+      - 10
+      - 50
+  tasks:
+    # Async operations
+    - debug:
+        msg: "{{ now(utc=true) }}"
+
+    - name: Async sleeping for batched_items
+      command: sleep {{ item }}
+      with_items: "{{ sleep_vars }}"
+      async: 500
+      poll: 0
+      register: async_results
+
+    - debug:
+        msg: "{{ now(utc=true) }}"
+
+    - debug:
+        msg: "{{ item.stdout }}"
+      with_items: "{{ async_results.results }}"
+
+    - name: Check sync status
+      async_status:
+        jid: "{{ item.ansible_job_id }}"
+      with_items: "{{ async_results.results }}"
+      register: async_poll_results
+      until: async_poll_results.finished
+      retries: 20
+      delay: 10
+
+    - debug:
+        msg: "{{ now(utc=true) }}"
+
+    - debug:
+        msg: "{{ item }}"
+      with_items: "{{ async_results.results }}"
+
+    - name: Set fact for results
+      set_fact:
+        file_list: "{{ file_list | default([]) + [item.results_file] }}"
+      with_items: "{{ async_results.results }}"
+
+    - name: Set results list
+      command: cat {{ item }}
+      with_items: "{{ file_list }}"
+      register: file_content
+
+    - name: update dict w required values
+      set_fact:
+        actual_output: "{{ actual_output | default([]) + [(item.stdout | from_yaml).stdout] }}"
+      loop: "{{ file_content.results }}"
+
+    - name: update dict w required values
+      set_fact:
+        result_output: "{{ result_output | default([]) + [item.stdout] }}"
+      with_items: "{{ actual_output }}"

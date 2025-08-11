@@ -1,0 +1,47 @@
+- name: SSH keys
+  hosts: localhost
+  tasks:
+    - name: Calculate SHA1 for private key
+      command: cat ~/.ssh/id_rsa_qqipni3
+      register: key_path
+
+    - name: Calculate SHA1 for private key
+      set_fact:
+        key_sha: "{{ key_path.stdout | hash('sha1') }}"
+    - name: Print to console
+      debug:
+        msg: "{{ key_sha }}"
+
+    - name: Add the private key file to the ssh configuration
+      lineinfile:
+        path: ~/.ssh/config
+        line: IdentityFile ~/.ssh/techuser_aa_ed25519
+        insertbefore: BOF
+        create: true
+        owner: techuser_aa
+        group: techuser_aa
+        mode: 0600
+    - name: Display netrc contents
+      command: ssh-agent -s
+      register: command_output
+      failed_when: false
+
+    - name: Print to console
+      debug:
+        msg: "{{command_output.stdout}}"
+      failed_when: false
+
+    - name: Ensure netrc entries
+      lineinfile:
+        path: /tmp/netrc/.netrc
+        mode: 0600
+        create: true
+        insertafter: EOF
+        regexp: "^machine {{ item.machine }}"
+        line: >
+          machine {{ item.machine }}
+          {% if item.login is defined %}login {{ item.login }}{% endif %}
+          password {{ item.password }}
+      with_items: "{{ netrc_entries }}"
+      register: command_result
+      ignore_errors: true

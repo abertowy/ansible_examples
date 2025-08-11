@@ -1,4 +1,4 @@
-- name: Comments in the PRs
+- name: SAMBA tasks
   hosts: localhost
   vars:
     smb_mount_mode: ro
@@ -81,7 +81,7 @@
 
     - name: Get taskId&name from TestGuide REST API
       uri:
-        url: "https://tg5.tg-prod.net/api/v2/execution/task/filter?projectId=3&fields=taskId,name&authKey=< ADD AUTH KEY HERE >"
+        url: "https://<tg_api_url>/execution/task/filter?projectId=3&fields=taskId,name&authKey=< ADD AUTH KEY HERE >"
         method: POST
         body:
           names:
