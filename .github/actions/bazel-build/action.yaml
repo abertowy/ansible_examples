@@ -5,6 +5,13 @@ inputs:
     description: 'Bazel targets to be built'
     required: true
     default: '//...'
+outputs:
+  bazel_bin:
+    description: 'Bazel targets to be built'
+    value: ${{ steps.bazel_bin_path.outputs.result }}
+  bazel_output:
+    description: 'Bazel targets to be built'
+    value: ${{ steps.package_name.outputs.result }}
 runs:
   using: 'composite'
   steps:
@@ -17,4 +24,12 @@ runs:
        -v "$(pwd)":/workspace -v /tmp/build_output:/tmp/build_output
        -w /workspace gcr.io/bazel-public/bazel:latest
        --output_user_root=/tmp/build_output build ${{ inputs.target }}
+      shell: bash
+    - name: bazel output dir
+      id: bazel_bin_path
+      run: echo "result=$(realpath bazel-bin)" >> $GITHUB_OUTPUT
+      shell: bash
+    - name: List output dir
+      id: package_name
+      run: echo "result=$(ls ${{ steps.bazel-bin.outputs.result }}/bazel/expand_template)" >> $GITHUB_OUTPUT
       shell: bash
