@@ -1,4 +1,4 @@
-- name: Check setup failures
+- name: Check SSH setup failures
   hosts: localhost
   tasks:
     - name: Display ssh contents
